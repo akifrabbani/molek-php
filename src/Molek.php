@@ -1,6 +1,6 @@
 <?php
 
-namespace Akifrabbani;
+namespace Akifrabbani\Molek;
 
 class Molek
 {
@@ -12,7 +12,7 @@ class Molek
      */
     public function __construct($rule = [])
     {
-        $_rule = $rule;
+        $this->_rule = $rule;
     }
 
     /**
@@ -24,7 +24,7 @@ class Molek
      * @return array Seconds of differenes and amount
      */
 
-    function timeToSec($rule, $value_is_amount = false) {
+    private static function timeToSec($rule, $value_is_amount = false) {
         $sec_diff = 0;
 
         $target = 0;
@@ -176,7 +176,7 @@ class Molek
                         throw new Exception('No price set for max rule.');
                     }
 
-                    $sec_diff = timeToSec($max_rule);
+                    $sec_diff = $this->timeToSec($max_rule);
 
                     if ($interval >= $sec_diff) {
                         $interval = 0;
@@ -198,7 +198,7 @@ class Molek
                             throw new Exception('No price set for first rule.');
                         }
 
-                        $sec_diff = timeToSec($first_rule);
+                        $sec_diff = $this->timeToSec($first_rule);
 
                         $interval -= $sec_diff;
                         $final_price = $first_rule['price'];
@@ -211,7 +211,7 @@ class Molek
 
         // set normal interval calculate difference
         if (isset($this->_rule['interval']) && $interval > 0) {
-            $sec_diff = timeToSec($this->_rule['interval'], true);
+            $sec_diff = $this->timeToSec($this->_rule['interval'], true);
 
             if ($sec_diff['diff'] != 0) {
                 while ($interval > 0) {

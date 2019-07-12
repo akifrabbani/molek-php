@@ -22,10 +22,12 @@ $ composer require akifrabbani/molek
 ``` php
 $start = new DateTime("2019-07-20 08:00:00");
 $end = new DateTime("2019-07-20 23:00:00");
+
+// Rule for every hour is RM 1.
 $ruleset = ['interval' => ['hour' => 1]];
 
 $molek = new AkifRabbani\Molek($ruleset);
-echo "Duration in seconds is " . $molek->duration($start, $end);
+echo "Price is RM " . $molek->calculate($start, $end);
 ```
 
 ## Credits
