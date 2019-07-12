@@ -1,6 +1,6 @@
 <?php
 
-namespace Akifrabbani\Molek;
+namespace Akifrabbani;
 
 class Molek
 {
@@ -145,15 +145,15 @@ class Molek
         $end_time = $end_date->getTimestamp();
 
         // calculate duration differences
-        if (isset($rule['operation'])) {
-            if (isset($rule['operation']['start']) && isset($rule['operation']['end'])) {
+        if (isset($this->_rule['operation'])) {
+            if (isset($this->_rule['operation']['start']) && isset($this->_rule['operation']['end'])) {
 
-                $operation_hours_a_day = abs(strtotime($rule['operation']['end']) - strtotime($rule['operation']['start'])) / (60 * 60);
+                $operation_hours_a_day = abs(strtotime($this->_rule['operation']['end']) - strtotime($this->_rule['operation']['start'])) / (60 * 60);
 
                 $start_date_x = clone $start_date;
                 $end_date_x = clone $end_date;
                 
-                $interval = operationDayToSec($start_date_x, $end_date_x, $rule['operation']['start'], $rule['operation']['end'], $operation_hours_a_day);
+                $interval = operationDayToSec($start_date_x, $end_date_x, $this->_rule['operation']['start'], $this->_rule['operation']['end'], $operation_hours_a_day);
             } else {
                 throw new Exception('Not enough arguement for operation.');
             }
@@ -165,12 +165,12 @@ class Molek
         $start_interval = $interval;
 
         // set start price
-        if (isset($rule['start'])) $final_price += $rule['start'];
+        if (isset($this->_rule['start'])) $final_price += $this->_rule['start'];
 
         // calculate max
-        if (isset($rule['max'])) {
-            if (count($rule['max']) != count($rule['max'], COUNT_RECURSIVE)) {
-                foreach ($rule['max'] as $max_rule) {
+        if (isset($this->_rule['max'])) {
+            if (count($this->_rule['max']) != count($this->_rule['max'], COUNT_RECURSIVE)) {
+                foreach ($this->_rule['max'] as $max_rule) {
                     
                     if (!isset($max_rule['price'])) {
                         throw new Exception('No price set for max rule.');
@@ -190,9 +190,9 @@ class Molek
         }
 
         // set by first price
-        if (isset($rule['first'])) {
-            if (count($rule['first']) != count($rule['first'], COUNT_RECURSIVE)) {
-                foreach ($rule['first'] as $first_rule) {
+        if (isset($this->_rule['first'])) {
+            if (count($this->_rule['first']) != count($this->_rule['first'], COUNT_RECURSIVE)) {
+                foreach ($this->_rule['first'] as $first_rule) {
                     if ($interval > 0) {
                         if (!isset($first_rule['price'])) {
                             throw new Exception('No price set for first rule.');
@@ -210,8 +210,8 @@ class Molek
         }
 
         // set normal interval calculate difference
-        if (isset($rule['interval']) && $interval > 0) {
-            $sec_diff = timeToSec($rule['interval'], true);
+        if (isset($this->_rule['interval']) && $interval > 0) {
+            $sec_diff = timeToSec($this->_rule['interval'], true);
 
             if ($sec_diff['diff'] != 0) {
                 while ($interval > 0) {
