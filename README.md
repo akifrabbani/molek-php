@@ -26,7 +26,7 @@ $end = new DateTime("2019-07-20 23:00:00");
 // Rule for every hour is RM 1.
 $ruleset = ['interval' => ['hour' => 1]];
 
-$molek = new AkifRabbani\Molek($ruleset);
+$molek = new AkifRabbani\Molek\Molek($ruleset);
 echo "Price is RM " . $molek->calculate($start, $end);
 ```
 
