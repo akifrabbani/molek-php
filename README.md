@@ -1,4 +1,4 @@
-# League Skeleton
+# Molek
 
 [![Latest Version](https://img.shields.io/github/release/akifrabbani/molek.svg?style=flat-square)](https://github.com/akifrabbani/molek/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
@@ -7,10 +7,7 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/akifrabbani/molek.svg?style=flat-square)](https://scrutinizer-ci.com/g/akifrabbani/molek)
 [![Total Downloads](https://img.shields.io/packagist/dt/league/skeleton.svg?style=flat-square)](https://packagist.org/packages/league/skeleton)
 
-**Note:** Replace `skeleton` with the correct package name in the above URLs, then delete this line.
-
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what
-PSRs you support to avoid any confusion with users and contributors.
+Payment amount calculator based on two dates and ruleset.
 
 ## Install
 
