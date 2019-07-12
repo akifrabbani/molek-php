@@ -1,0 +1,32 @@
+{
+    "name": "akifrabbani/molek",
+    "description": "Calculate amount based on two dates and a ruleset",
+    "keywords": [
+        "molek",
+        "date",
+        "calculate"
+    ],
+    "homepage": "https://github.com/akifrabbani/molek-php",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Akif Rabbani",
+            "email": "akif@rabbani.my",
+            "homepage": "https://akif.rabbani.my",
+            "role": "Developer"
+        },
+        {
+            "name": "Mohd Hafizuddin M Marzuki",
+            "email": "hafizuddin_83@yahoo.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php" : ">=5.2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Akifrabbani\\Molek\\": "src"
+        }
+    }
+}
