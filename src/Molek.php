@@ -70,8 +70,8 @@ class Molek
         $end_at = clone $end;
      
         if ($start_at->format('Y-m-d') === $end_at->format('Y-m-d')) {
-            $operation_start_at = new DateTime($start_at->format('Y-m-d') . ' ' . $operation_hour_start . ':00');
-            $operation_end_at = new DateTime($end_at->format('Y-m-d') . ' ' . $operation_hour_end . ':00');
+            $operation_start_at = new \DateTime($start_at->format('Y-m-d') . ' ' . $operation_hour_start . ':00');
+            $operation_end_at = new \DateTime($end_at->format('Y-m-d') . ' ' . $operation_hour_end . ':00');
      
             if ($start_at > $operation_start_at) {
                 $operation_start_at = $start_at;
@@ -85,8 +85,8 @@ class Molek
         } elseif ($start_at->format('Y-m-d') !== $end_at->format('Y-m-d')) {
             $is_adjacent_date = (clone $start_at)->modify('+1 day')->format('Y-m-d') === $end_at->format('Y-m-d');
      
-            $first_day_operation_start_at = new DateTime($start_at->format('Y-m-d') . ' ' . $operation_hour_start . ':00');
-            $first_day_operation_end_at = new DateTime($start_at->format('Y-m-d') . ' ' . $operation_hour_end . ':00');
+            $first_day_operation_start_at = new \DateTime($start_at->format('Y-m-d') . ' ' . $operation_hour_start . ':00');
+            $first_day_operation_end_at = new \DateTime($start_at->format('Y-m-d') . ' ' . $operation_hour_end . ':00');
      
             if ($start_at > $first_day_operation_start_at) {
                 $first_day_operation_start_at = $start_at;
@@ -96,8 +96,8 @@ class Molek
                 $first_day_operation_end_at = $start_at;
             }
      
-            $last_day_operation_start_at = new DateTime($end_at->format('Y-m-d') . ' ' . $operation_hour_start . ':00');
-            $last_day_operation_end_at = new DateTime($end_at->format('Y-m-d') . ' ' . $operation_hour_end . ':00');
+            $last_day_operation_start_at = new \DateTime($end_at->format('Y-m-d') . ' ' . $operation_hour_start . ':00');
+            $last_day_operation_end_at = new \DateTime($end_at->format('Y-m-d') . ' ' . $operation_hour_end . ':00');
      
             if ($end_at < $last_day_operation_start_at) {
                 $last_day_operation_start_at = $end_at;
@@ -113,8 +113,8 @@ class Molek
             if ($is_adjacent_date) {
                 return $first_day_seconds + $last_day_seconds;
             } else {
-                $first_day_after_at = new DateTime((clone $start_at)->modify('+1 day')->format('Y-m-d') . ' ' . $operation_hour_start . ':00');
-                $last_day_before_at = new DateTime((clone $end_at)->modify('-1 day')->format('Y-m-d') . ' ' . $operation_hour_end . ':00');
+                $first_day_after_at = new \DateTime((clone $start_at)->modify('+1 day')->format('Y-m-d') . ' ' . $operation_hour_start . ':00');
+                $last_day_before_at = new \DateTime((clone $end_at)->modify('-1 day')->format('Y-m-d') . ' ' . $operation_hour_end . ':00');
      
                 if ($first_day_after_at->format('Y-m-d') === $last_day_before_at->format('Y-m-d')) {
                     return  $first_day_seconds + ($operation_hours_a_day * 3600) + $last_day_seconds;
@@ -155,7 +155,7 @@ class Molek
                 
                 $interval = $this->operationDayToSec($start_date_x, $end_date_x, $this->_rule['operation']['start'], $this->_rule['operation']['end'], $operation_hours_a_day);
             } else {
-                throw new Exception('Not enough arguement for operation.');
+                throw new \Exception('Not enough arguement for operation.');
             }
         } else {
             // use normal time
@@ -173,7 +173,7 @@ class Molek
                 foreach ($this->_rule['max'] as $max_rule) {
                     
                     if (!isset($max_rule['price'])) {
-                        throw new Exception('No price set for max rule.');
+                        throw new \Exception('No price set for max rule.');
                     }
 
                     $sec_diff = $this->timeToSec($max_rule);
@@ -185,7 +185,7 @@ class Molek
                 
                 }
             } else {
-                throw new Exception('Max argument must be a multidimensional array.');
+                throw new \Exception('Max argument must be a multidimensional array.');
             }
         }
 
@@ -195,7 +195,7 @@ class Molek
                 foreach ($this->_rule['first'] as $first_rule) {
                     if ($interval > 0) {
                         if (!isset($first_rule['price'])) {
-                            throw new Exception('No price set for first rule.');
+                            throw new \Exception('No price set for first rule.');
                         }
 
                         $sec_diff = $this->timeToSec($first_rule);
@@ -205,7 +205,7 @@ class Molek
                     }
                 }
             } else {
-                throw new Exception('First argument must be a multidimensional array.');
+                throw new \Exception('First argument must be a multidimensional array.');
             }
         }
 
