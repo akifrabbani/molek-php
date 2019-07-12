@@ -65,7 +65,7 @@ class Molek
      * @return int Seconds of operation time
      */
     
-    function operationDayToSec($start, $end, $operation_hour_start, $operation_hour_end, $operation_hours_a_day) {
+    private static function operationDayToSec($start, $end, $operation_hour_start, $operation_hour_end, $operation_hours_a_day) {
         $start_at = clone $start;
         $end_at = clone $end;
      
@@ -153,7 +153,7 @@ class Molek
                 $start_date_x = clone $start_date;
                 $end_date_x = clone $end_date;
                 
-                $interval = operationDayToSec($start_date_x, $end_date_x, $this->_rule['operation']['start'], $this->_rule['operation']['end'], $operation_hours_a_day);
+                $interval = $this->operationDayToSec($start_date_x, $end_date_x, $this->_rule['operation']['start'], $this->_rule['operation']['end'], $operation_hours_a_day);
             } else {
                 throw new Exception('Not enough arguement for operation.');
             }
