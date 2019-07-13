@@ -1,17 +1,21 @@
 <?php
+// Run this example in terminal / console
 use AkifRabbani\Molek\Molek;
 
 require 'src/Molek.php';
 
 $bench_time_start = microtime(true);
 
-$start_at = new DateTime('2019-07-10 10:00:00');
-$end_at = new DateTime('2019-07-14 12:30:00');
+if (!isset($argv[1])) die('Please provide start date!');
+if (!isset($argv[2])) die('Please provide end date!');
+
+$start_at = new DateTime($argv[1]);
+$end_at = new DateTime($argv[2]);
 
 // Complete ruleset
 // All rules are optional
 $ruleset = [
-	'base_price' => 1,
+	'base_price' => 0,
 	'operation_hours' => [
 		'start' => '08:00',
 		'end' => '20:00'
@@ -20,13 +24,7 @@ $ruleset = [
 		[
 			'type' => 'minute',
 			'duration' => 15,
-			'price' => 1
-		],
-		[
-			'type' => 'hour',
-			'duration' => 1,
-			'price' => 2,
-			'days' => ['mon', 'tue', 'wed', 'thu', 'fri']
+			'price' => 0
 		],
 		[
 			'type' => 'hour',
@@ -36,8 +34,13 @@ $ruleset = [
 			'dates' => [
 				'2019-07-11'
 			]
-		]
-	],
+		],
+		[
+			'type' => 'hour',
+			'duration' => 1,
+			'price' => 2,
+			'days' => ['mon', 'tue', 'wed', 'thu', 'fri']
+		]	],
 	'normal' => [
 		[
 			'type' => 'hour',
