@@ -76,35 +76,37 @@ class Molek
     }
 
     /**
-     * Get a rule from the first ruleset
+     * Get the rules from the first ruleset
      *
      * @param int $duration Time duration
      * @param DateTime $date Date for rule selection
      *
-     * @return array|null Rule or null
+     * @return array Selected rules
      */
 
-    protected function getFirstRule($duration, $date)
+    protected function getFirstRules($duration, $date)
     {
         if (!isset($this->ruleset['first'])) return null;
 
         $rules = $this->ruleset['first'];
-        $selected_rule = null;
+        $selected_rules = [];
 
         foreach ($rules as $key => $rule) {
             $rule_duration = $this->timeToSeconds($rule['type'], $rule['duration']);
 
             if ($this->checkDateWithinDaysOrDates($date, $rule)) {
-                if ($duration >= $rule_duration) {
-                    $selected_rule = [
+                if ($duration > 0) {
+                    $selected_rules[] = [
                         'duration' => $rule_duration,
                         'price' => $rule['price']
                     ];
+
+                    $duration -= $rule_duration;
                 }
             }
         }
 
-        return $selected_rule;
+        return $selected_rules;
     }
 
     /**
@@ -172,14 +174,14 @@ class Molek
      * Calculate the day's price based on provided rules
      *
      * @param int $duration Time duration
-     * @param array|null $first_rule First rule
+     * @param array|null $first_rules First rules
      * @param array|null $normal_rule Normal rule
      * @param array|null $max_rule Max rule
      *
      * @return string Price
      */
 
-    protected function calculateDayPrice($duration, $first_rule, $normal_rule, $max_rule)
+    protected function calculateDayPrice($duration, $first_rules, $normal_rule, $max_rule)
     {
         $price = '0.00';
 
@@ -189,12 +191,14 @@ class Molek
             }
         }
 
-        if ($first_rule !== null) {
-            $price = bcadd($price, $first_rule['price'], 2);
-            $duration -= $first_rule['duration'];
+        if (count($first_rules) > 0) {
+            foreach ($first_rules as $first_rule) {
+                $price = bcadd($price, $first_rule['price'], 2);
+                $duration -= $first_rule['duration'];
+            }
         }
 
-        if ($normal_rule !== null) {
+        if ($duration > 0 && $normal_rule !== null) {
             $price = bcadd($price, bcmul(bcdiv($duration, $normal_rule['interval'], 10), $normal_rule['price'], 10), 2);
         }
 
@@ -252,11 +256,11 @@ class Molek
 
             $duration = $operation_end_at->getTimestamp() - $operation_start_at->getTimestamp();
 
-            $first_rule = $this->getFirstRule($duration, $start_at);
+            $first_rules = $this->getFirstRules($duration, $start_at);
             $normal_rule = $this->getNormalRule($start_at);
             $max_rule = $this->getMaxRule($duration, $start_at);
 
-            $price = $this->calculateDayPrice($duration, $first_rule, $normal_rule, $max_rule);
+            $price = $this->calculateDayPrice($duration, $first_rules, $normal_rule, $max_rule);
 
             $total_duration = $duration;
             $total_price = bcadd($total_price, $price, 2);
@@ -294,16 +298,16 @@ class Molek
             $first_day_duration = $first_day_operation_end_at->getTimestamp() - $first_day_operation_start_at->getTimestamp();
             $last_day_duration = $last_day_operation_end_at->getTimestamp() - $last_day_operation_start_at->getTimestamp();
 
-            $first_day_first_rule = $this->getFirstRule($first_day_duration, $start_at);
+            $first_day_first_rules = $this->getFirstRules($first_day_duration, $start_at);
             $first_day_normal_rule = $this->getNormalRule($start_at);
             $first_day_max_rule = $this->getMaxRule($first_day_duration, $start_at);
 
-            $first_day_price = $this->calculateDayPrice($first_day_duration, $first_day_first_rule, $first_day_normal_rule, $first_day_max_rule);
+            $first_day_price = $this->calculateDayPrice($first_day_duration, $first_day_first_rules, $first_day_normal_rule, $first_day_max_rule);
 
             $last_day_normal_rule = $this->getNormalRule($end_at);
             $last_day_max_rule = $this->getMaxRule($last_day_duration, $end_at);
 
-            $last_day_price = $this->calculateDayPrice($last_day_duration, null, $last_day_normal_rule, $first_day_max_rule);
+            $last_day_price = $this->calculateDayPrice($last_day_duration, [], $last_day_normal_rule, $first_day_max_rule);
 
             $total_duration = $first_day_duration + $last_day_duration;;
             $total_price = bcadd($total_price, bcadd($first_day_price, $last_day_price, 2), 2);
@@ -323,7 +327,7 @@ class Molek
                     $in_between_normal_rule = $this->getNormalRule($in_between_date);
                     $in_between_max_rule = $this->getMaxRule($in_between_duration, $in_between_date);
 
-                    $in_between_price = $this->calculateDayPrice($in_between_duration, null, $in_between_normal_rule, $in_between_max_rule);
+                    $in_between_price = $this->calculateDayPrice($in_between_duration, [], $in_between_normal_rule, $in_between_max_rule);
 
                     $total_duration += $in_between_duration;
                     $total_price = bcadd($total_price, $in_between_price, 2);
