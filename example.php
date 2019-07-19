@@ -13,65 +13,115 @@ $start_at = new DateTime($argv[1]);
 $end_at = new DateTime($argv[2]);
 
 // Complete ruleset
-// All rules are optional
+// All top rules are optional
+// Top rules: base_price, operation_hours, first, normal, max
 $ruleset = [
 	'base_price' => 0,
 	'operation_hours' => [
 		'start' => '08:00',
 		'end' => '20:00'
 	],
+
+	// First rules
 	'first' => [
 		[
-			'type' => 'minute',
-			'duration' => 15,
-			'price' => 0
-		],
-		[
-			'type' => 'hour',
-			'duration' => 1,
-			'price' => 4,
-			'days' => ['sat', 'sun'],
-			'dates' => [
-				'2019-07-11'
+			'duration' => [
+				'type' => 'minute',
+				'value' => 15
+			],
+			'prices' => [
+				[
+					'value' => 0
+				]
 			]
 		],
 		[
-			'type' => 'hour',
-			'duration' => 1,
-			'price' => 2,
-			'days' => ['mon', 'tue', 'wed', 'thu', 'fri']
-		]	],
-	'normal' => [
-		[
-			'type' => 'hour',
-			'interval' => 1,
-			'price' => 1,
-			'days' => ['mon', 'tue', 'wed', 'thu', 'fri']
-		],
-		[
-			'type' => 'hour',
-			'interval' => 1,
-			'price' => 1.5,
-			'days' => ['sat', 'sun'],
-			'dates' => [
-				'2019-07-11'
+			'duration' => [
+				'type' => 'hour',
+				'value' => 1
+			],
+			// Put the highest priority price first
+			// Since the first price that meets the conditions will be selected
+			'prices' => [
+				[
+					'value' => 4,
+					'dates' => [
+						'2019-07-11'
+					]
+				],
+				[
+					'value' => 4,
+					'days' => ['sat', 'sun']
+				],
+				[
+					'value' => 2,
+					'days' => ['mon', 'tue', 'wed', 'thu', 'fri']
+				]
 			]
 		]
 	],
+
+	// Normal rules
+	'normal' => [
+		[
+			'per_block' => true,
+			'interval' => [
+				'type' => 'hour',
+				'value' => 1,
+			],
+			'prices' => [
+				[
+					'value' => 4,
+					'dates' => [
+						'2019-07-11'
+					]
+				],
+				[
+					'value' => 4,
+					'days' => ['sat', 'sun']
+				],
+				[
+					'value' => 2,
+					'days' => ['mon', 'tue', 'wed', 'thu', 'fri']
+				]
+			]
+		]
+	],
+
+
+	// Max rules
 	'max' => [
 		[
-			'type' => 'hour',
-			'duration' => 8,
-			'price' => 10,
-			'days' => ['mon', 'tue', 'wed', 'thu', 'fri']
+			'duration' => [
+				'type' => 'hour',
+				'value' => 6,
+			],
+			'prices' => [
+				[
+					'value' => 20,
+					'dates' => [
+						'2019-07-11'
+					]
+				],
+				[
+					'value' => 20,
+					'days' => ['sat', 'sun']
+				],
+				[
+					'value' => 10,
+					'days' => ['mon', 'tue', 'wed', 'thu', 'fri']
+				]
+			]
 		],
 		[
-			'type' => 'hour',
-			'duration' => 8,
-			'price' => 15,
-			'days' => ['sat', 'sun'],
-			'dates' => [
-				'2019-07-11'
+			'duration' => [
+				'type' => 'hour',
+				'value' => 30,
+			],
+			'prices' => [
+				[
+					'value' => 100
+				]
 			]
 		]
 	]

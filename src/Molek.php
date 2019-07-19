@@ -28,7 +28,7 @@ class Molek
     }
 
     /**
-     * Converts a time value (minutes / hours / days / months) to seconds
+     * Converts a time value (minutes / hours / days / weeks / months) to seconds
      *
      * @param string $type Time type
      * @param int $value Time value
@@ -46,6 +46,8 @@ class Molek
             return $value * 60 * 60;
         } elseif ($type === 'day') {
             return $value * 24 * 60 * 60;
+        } elseif ($type === 'week') {
+            return $value * 7 * 24 * 60 * 60;
         } elseif ($type === 'month') {
             return $value * 30 * 24 * 60 * 60;
         }
@@ -61,18 +63,17 @@ class Molek
      */
     protected function checkDateWithinDaysOrDates($date, $rule)
     {
-        $first_flag = true;
-        $second_flag = true;
+        $result = true;
 
-        if (isset($rule['days']) && !in_array(strtolower($date->format('D')), $rule['days'])) {
-            $first_flag = false;
+        if (isset($rule['days']) && isset($rule['dates'])) {
+            $result = in_array(strtolower($date->format('D')), $rule['days']) || in_array($date->format('Y-m-d'), $rule['dates']);
+        } elseif (isset($rule['days'])) {
+            $result = in_array(strtolower($date->format('D')), $rule['days']);
+        } elseif (isset($rule['dates'])) {
+            $result = in_array($date->format('Y-m-d'), $rule['dates']);
         }
 
-        if (isset($rule['dates']) && !in_array($date->format('Y-m-d'), $rule['dates'])) {
-            $second_flag = false;
-        }
-
-        return $first_flag || $second_flag;
+        return $result;
     }
 
     /**
@@ -92,16 +93,20 @@ class Molek
         $selected_rules = [];
 
         foreach ($rules as $key => $rule) {
-            $rule_duration = $this->timeToSeconds($rule['type'], $rule['duration']);
+            $rule_duration = $this->timeToSeconds($rule['duration']['type'], $rule['duration']['value']);
 
-            if ($this->checkDateWithinDaysOrDates($date, $rule)) {
-                if ($duration > 0) {
-                    $selected_rules[] = [
-                        'duration' => $rule_duration,
-                        'price' => $rule['price']
-                    ];
+            foreach ($rule['prices'] as $price_rule) {
+                if ($this->checkDateWithinDaysOrDates($date, $price_rule)) {
+                    if ($duration > 0) {
+                        $selected_rules[] = [
+                            'duration' => $rule_duration,
+                            'price' => $price_rule['value']
+                        ];
 
-                    $duration -= $rule_duration;
+                        $duration -= $rule_duration;
+                    }
+
+                    break;
                 }
             }
         }
@@ -125,13 +130,18 @@ class Molek
         $selected_rule = null;
 
         foreach ($rules as $key => $rule) {
-            $rule_interval = $this->timeToSeconds($rule['type'], $rule['interval']);
+            $rule_interval = $this->timeToSeconds($rule['interval']['type'], $rule['interval']['value']);
 
-            if ($this->checkDateWithinDaysOrDates($date, $rule)) {
-                $selected_rule = [
-                    'interval' => $rule_interval,
-                    'price' => $rule['price']
-                ];
+            foreach ($rule['prices'] as $price_rule) {
+                if ($this->checkDateWithinDaysOrDates($date, $price_rule)) {
+                    $selected_rule = [
+                        'per_block' => $rule['per_block'],
+                        'interval' => $rule_interval,
+                        'price' => $price_rule['value']
+                    ];
+
+                    break;
+                }
             }
         }
 
@@ -141,13 +151,14 @@ class Molek
     /**
      * Get a rule from the max ruleset
      *
+     * @param string $type Max rule type
      * @param int $duration Time duration
-     * @param DateTime $date Date for rule selection
+     * @param DateTime|null $date Date for rule selection
      *
      * @return array|null Rule or null
      */
 
-    protected function getMaxRule($duration, $date)
+    protected function getMaxRule($duration, $date = null)
     {
         if (!isset($this->ruleset['max'])) return null;
 
@@ -155,17 +166,22 @@ class Molek
         $selected_rule = null;
 
         foreach ($rules as $key => $rule) {
-            $rule_duration = $this->timeToSeconds($rule['type'], $rule['duration']);
+            $rule_duration = $this->timeToSeconds($rule['duration']['type'], $rule['duration']['value']);
 
-            if ($this->checkDateWithinDaysOrDates($date, $rule)) {
-                if ($duration >= $rule_duration) {
+            if ($duration >= $rule_duration) {
+                foreach ($rule['prices'] as $price_rule) {
+                    var_dump($this->checkDateWithinDaysOrDates($date, $price_rule));
+                    if ($date !== null && !$this->checkDateWithinDaysOrDates($date, $price_rule)) continue;
+
                     $selected_rule = [
                         'duration' => $rule_duration,
-                        'price' => $rule['price']
+                        'price' => $price_rule['value']
                     ];
+
+                    break;
                 }
             }
-        }
+       }
 
         return $selected_rule;
     }
@@ -187,11 +203,12 @@ class Molek
 
         if ($max_rule !== null) {
             if ($duration >= $max_rule['duration']) {
-                return bcadd($max_rule['price'], 0, 2);
+                $price = bcadd($max_rule['price'], 0, 2);
+                $duration = 0;
             }
         }
 
-        if (count($first_rules) > 0) {
+        if ($duration > 0 && count($first_rules) > 0) {
             foreach ($first_rules as $first_rule) {
                 $price = bcadd($price, $first_rule['price'], 2);
                 $duration -= $first_rule['duration'];
@@ -199,7 +216,13 @@ class Molek
         }
 
         if ($duration > 0 && $normal_rule !== null) {
-            $price = bcadd($price, bcmul(bcdiv($duration, $normal_rule['interval'], 10), $normal_rule['price'], 10), 2);
+            $duration_per_interval = $duration / $normal_rule['interval'];
+
+            if ($normal_rule['per_block']) {
+                $duration_per_interval = ceil($duration_per_interval);
+            }
+
+            $price = bcadd($price, bcmul($duration_per_interval, $normal_rule['price'], 10), 2);
         }
 
         return $price;
@@ -268,6 +291,7 @@ class Molek
             $days[] = [
                 'start_at' => $operation_start_at->format('Y-m-d H:i:s'),
                 'end_at' => $operation_end_at->format('Y-m-d H:i:s'),
+                'duration' => $total_duration,
                 'price' => $total_price
             ];
         } elseif ($start_at->format('Y-m-d') !== $end_at->format('Y-m-d')) {
@@ -315,6 +339,7 @@ class Molek
             $days[] = [
                 'start_at' => $first_day_operation_start_at->format('Y-m-d H:i:s'),
                 'end_at' => $first_day_operation_end_at->format('Y-m-d H:i:s'),
+                'duration' => $first_day_duration,
                 'price' => $first_day_price
             ];
 
@@ -335,6 +360,7 @@ class Molek
                     $days[] = [
                         'start_at' => $in_between_date->format('Y-m-d') . ' ' . $operation_hour_start . ':00',
                         'end_at' => $in_between_date->format('Y-m-d') . ' ' . $operation_hour_end . ':00',
+                        'duration' => $in_between_duration,
                         'price' => $in_between_price
                     ];
 
@@ -346,6 +372,7 @@ class Molek
             $days[] = [
                 'start_at' => $last_day_operation_start_at->format('Y-m-d H:i:s'),
                 'end_at' => $last_day_operation_end_at->format('Y-m-d H:i:s'),
+                'duration' => $last_day_duration,
                 'price' => $last_day_price
             ];
         }
